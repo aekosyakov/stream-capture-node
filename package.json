@@ -1,0 +1,26 @@
+{
+  "name": "stream-capture-node",
+  "version": "1.0.0",
+  "description": "NodeJS command-line package to capture and stream macOS screen.",
+  "main": "index.js",
+  "scripts": {
+    "test": "capture"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aekosyakov/stream-capture-node.git"
+  },
+  "keywords": [
+    "nodejs",
+    "swift",
+    "macOS",
+    "screenCapture",
+    "avfoundation"
+  ],
+  "author": "Alex Kosyakov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aekosyakov/stream-capture-node/issues"
+  },
+  "homepage": "https://github.com/aekosyakov/stream-capture-node#readme"
+}
