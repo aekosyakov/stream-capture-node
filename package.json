@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "NodeJS command-line package to capture and stream macOS screen.",
   "main": "index.js",
+  "bin": {
+    "capture": "index.js"
+  },
   "scripts": {
     "test": "capture"
   },
@@ -22,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/aekosyakov/stream-capture-node/issues"
   },
-  "homepage": "https://github.com/aekosyakov/stream-capture-node#readme"
+  "homepage": "https://github.com/aekosyakov/stream-capture-node#readme",
+  "dependencies": {
+    "yargs": "^13.2.4"
+  }
 }
