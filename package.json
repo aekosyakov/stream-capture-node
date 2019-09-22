@@ -2,16 +2,22 @@
   "name": "stream-capture-node",
   "version": "1.0.0",
   "description": "NodeJS command-line package to capture and stream macOS screen.",
+  "author": "Alex Kosyakov",
+  "license": "ISC",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aekosyakov/stream-capture-node.git"
+  },
+  "engines": {
+    "node": ">=8"
+  },
   "bin": {
     "capture": "index.js"
   },
   "scripts": {
-    "test": "capture"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aekosyakov/stream-capture-node.git"
+    "build": "swift build --configuration=release --static-swift-stdlib -Xswiftc '-target' -Xswiftc 'x86_64-apple-macosx10.12' && mv .build/release/aperture .",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "nodejs",
@@ -20,13 +26,25 @@
     "screenCapture",
     "avfoundation"
   ],
-  "author": "Alex Kosyakov",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/aekosyakov/stream-capture-node/issues"
   },
   "homepage": "https://github.com/aekosyakov/stream-capture-node#readme",
   "dependencies": {
-    "yargs": "^13.2.4"
+    "electron-util": "^0.11.0",
+    "execa": "^1.0.0",
+    "file-url": "^2.0.2",
+    "macos-version": "^5.0.0",
+    "tempy": "^0.2.1"
+  },
+  "devDependencies": {
+    "ava": "^1.2.1",
+    "delay": "^4.1.0",
+    "file-type": "^10.8.0",
+    "read-chunk": "^3.0.0",
+    "xo": "^0.24.0"
+  },
+  "xo": {
+    "space": true
   }
 }
