@@ -1,28 +1,21 @@
-// swift-tools-version:5.0
+// swift-tools-version:5.1
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
 import PackageDescription
 
 let package = Package(
-  name: "ApertureCLI",
-  platforms: [
-    .macOS(.v10_12)
-  ],
-  products: [
-    .executable(
-      name: "aperture",
-      targets: [
-        "ApertureCLI"
-      ]
-    )
-  ],
-  dependencies: [
-    .package(url: "https://github.com/wulkano/Aperture", from: "0.2.0")
-  ],
-  targets: [
-    .target(
-      name: "ApertureCLI",
-      dependencies: [
-        "Aperture"
-      ]
-    )
-  ]
+    name: "CaptureCLI",
+    products: [
+        .library(
+            name: "CaptureCLI",
+            targets: ["CaptureCLI"]),
+    ],
+    targets: [
+        .target(
+            name: "CaptureCLI",
+            dependencies: []),
+        .testTarget(
+            name: "CaptureCLITests",
+            dependencies: ["CaptureCLI"]),
+    ]
 )

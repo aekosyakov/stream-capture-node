@@ -7,10 +7,10 @@ const macosVersion = require('macos-version');
 const fileUrl = require('file-url');
 const electronUtil = require('electron-util/node');
 
-const debuglog = util.debuglog('aperture');
+const debuglog = util.debuglog('capture');
 
 // Workaround for https://github.com/electron/electron/issues/9459
-const BIN = path.join(electronUtil.fixPathForAsarUnpack(__dirname), 'aperture');
+const BIN = path.join(electronUtil.fixPathForAsarUnpack(__dirname), 'capture');
 
 const supportsHevcHardwareEncoding = (() => {
   if (!macosVersion.isGreaterThanOrEqualTo('10.13')) {
@@ -119,8 +119,7 @@ class Aperture {
 
       this.recorder.stdout.setEncoding('utf8');
       this.recorder.stdout.on('data', data => {
-        debuglog(data);
-
+        print(data);
         if (data.trim() === 'R') {
           // `R` is printed by Swift when the recording **actually** starts
           clearTimeout(timeout);
