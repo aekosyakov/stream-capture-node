@@ -25,7 +25,7 @@ const supportsHevcHardwareEncoding = (() => {
   return result && Number(result[1]) >= 6;
 })();
 
-class Aperture {
+class ScreenCapture {
   constructor() {
     macosVersion.assertGreaterThanOrEqualTo('10.12');
   }
@@ -45,8 +45,6 @@ class Aperture {
         return;
       }
 
-      this.tmpPath = tempy.file({extension: 'mp4'});
-
       if (highlightClicks === true) {
         showCursor = true;
       }
@@ -62,7 +60,6 @@ class Aperture {
       }
 
       const recorderOpts = {
-        destination: fileUrl(this.tmpPath),
         framesPerSecond: fps,
         showCursor,
         highlightClicks,
@@ -96,6 +93,7 @@ class Aperture {
         recorderOpts.videoCodec = codecMap.get(videoCodec);
       }
 
+      console.log([JSON.stringify(recorderOpts)])
       this.recorder = execa(BIN, [JSON.stringify(recorderOpts)]);
 
       const timeout = setTimeout(() => {
@@ -142,7 +140,7 @@ class Aperture {
   }
 }
 
-module.exports = () => new Aperture();
+module.exports = () => new ScreenCapture();
 
 module.exports.screens = async () => {
   const stderr = await execa.stderr(BIN, ['list-screens']);

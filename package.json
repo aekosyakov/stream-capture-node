@@ -16,7 +16,7 @@
     "capture": "index.js"
   },
   "scripts": {
-    "build": "swift build --configuration=release --static-swift-stdlib -Xswiftc '-target' -Xswiftc 'x86_64-apple-macosx10.12' && mv .build/release/aperture .",
+    "build": "swift build --configuration=release --static-swift-stdlib -Xswiftc '-target' -Xswiftc 'x86_64-apple-macosx10.12' && mv .build/release/capture .",
     "prepublish": "npm run build"
   },
   "keywords": [

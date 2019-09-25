@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "ScreenCapture",
+        "repositoryURL": "https://github.com/aekosyakov/ScreenCapture.git",
+        "state": {
+          "branch": null,
+          "revision": "819a0497c7f94b2602893826934f66faeb6bcd19",
+          "version": "1.0.2"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -7,6 +7,8 @@ final class CaptureCLITests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
 //        XCTAssertEqual(CaptureCLI(cropRect: ).text, "Hello, World!")
+//        let capture = CaptureCLI()
+//        capture.record()
     }
 
     static var allTests = [
