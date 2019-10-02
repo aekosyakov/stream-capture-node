@@ -1,7 +1,7 @@
 {
   "name": "stream-capture-node",
-  "version": "1.0.0",
-  "description": "NodeJS command-line package to capture and stream macOS screen.",
+  "version": "1.0.1",
+  "description": "NodeJS command-line package to capture macOS screen.",
   "author": "Alex Kosyakov",
   "license": "ISC",
   "main": "index.js",
@@ -16,7 +16,7 @@
     "capture": "index.js"
   },
   "scripts": {
-    "build": "swift build --configuration=release --static-swift-stdlib -Xswiftc '-target' -Xswiftc 'x86_64-apple-macosx10.12' && mv .build/release/capture .",
+    "build": "swift build --configuration=release --static-swift-stdlib -Xswiftc '-target' -Xswiftc 'x86_64-apple-macosx10.13' && mv .build/release/capture .",
     "prepublish": "npm run build"
   },
   "keywords": [

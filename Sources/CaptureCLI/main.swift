@@ -1,6 +1,37 @@
 import Foundation
 import AVFoundation
-import ScreenCapture
+
+let output = FileHandle.standardOutput
+func record() throws {
+  let options: Options = try CLI.arguments.first!.jsonDecoded()
+  let recorder = try ScreenCapture(
+    framesPerSecond: options.framesPerSecond,
+    cropRect: options.cropRect,
+    showCursor: options.showCursor,
+    highlightClicks: options.highlightClicks,
+    screenId: options.screenId == 0 ? .main : options.screenId,
+    audioDevice: options.audioDeviceId != nil ? AVCaptureDevice(uniqueID: options.audioDeviceId!) : nil,
+    videoCodec: options.videoCodec
+  )
+  recorder.onDataStream = {
+    output.write($0)
+  }
+  recorder.onFinish = { exit(0) }
+  recorder.onError = {
+    recorder.stop()
+    CLI.standardError.write($0.localizedDescription)
+    exit(0)
+  }
+
+  CLI.onExit = {
+    recorder.stop()
+    exit(0)
+  }
+  recorder.start()
+
+  setbuf(__stdoutp, nil)
+  RunLoop.main.run()
+}
 
 struct Options: Decodable {
   let framesPerSecond: Int
@@ -10,44 +41,6 @@ struct Options: Decodable {
   let screenId: CGDirectDisplayID
   let audioDeviceId: String?
   let videoCodec: String?
-}
-
-func record() throws {
-  let options: Options = try CLI.arguments.first!.jsonDecoded()
-
-  let recorder = try ScreenCapture(
-    framesPerSecond: options.framesPerSecond,
-    cropRect: options.cropRect,
-    showCursor: options.showCursor,
-    highlightClicks: options.highlightClicks,
-    screenId: options.screenId == 0 ? .main : options.screenId,
-    audioDevice: options.audioDeviceId != nil ? AVCaptureDevice(uniqueID: options.audioDeviceId!) : nil,
-    videoCodec: options.videoCodec.map { AVVideoCodecType(rawValue: $0) }
-  )
-
-  recorder.onStart = {
-    print("R")
-  }
-
-  recorder.onFinish = {
-    exit(0)
-  }
-
-  recorder.onError = {
-    print($0, to: .standardError)
-    exit(1)
-  }
-
-  CLI.onExit = {
-    recorder.stop()
-    // Do not call `exit()` here as the video is not always done
-    // saving at this point and will be corrupted randomly
-  }
-
-  recorder.start()
-  print(recorder)
-  setbuf(__stdoutp, nil)
-  RunLoop.main.run()
 }
 
 func showUsage() {

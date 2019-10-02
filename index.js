@@ -2,42 +2,24 @@ const os = require('os');
 const util = require('util');
 const path = require('path');
 const execa = require('execa');
-const tempy = require('tempy');
 const macosVersion = require('macos-version');
-const fileUrl = require('file-url');
 const electronUtil = require('electron-util/node');
-
 const debuglog = util.debuglog('capture');
-
-// Workaround for https://github.com/electron/electron/issues/9459
-const BIN = path.join(electronUtil.fixPathForAsarUnpack(__dirname), 'capture');
-
-const supportsHevcHardwareEncoding = (() => {
-  if (!macosVersion.isGreaterThanOrEqualTo('10.13')) {
-    return false;
-  }
-
-  // Get the Intel Core generation, the `4` in `Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz`
-  // More info: https://www.intel.com/content/www/us/en/processors/processor-numbers.html
-  const result = /Intel.*Core.*i(?:7|5)-(\d)/.exec(os.cpus()[0].model);
-
-  // Intel Core generation 6 or higher supports HEVC hardware encoding
-  return result && Number(result[1]) >= 6;
-})();
+const spawn = require('child_process').spawn
 
 class ScreenCapture {
   constructor() {
-    macosVersion.assertGreaterThanOrEqualTo('10.12');
+    macosVersion.assertGreaterThanOrEqualTo('10.13');
   }
 
   startRecording({
-    fps = 30,
+    fps = 60,
     cropArea = undefined,
     showCursor = true,
     highlightClicks = false,
     screenId = 0,
     audioDeviceId = undefined,
-    videoCodec = undefined
+    videoCodec = "h264"
   } = {}) {
     return new Promise((resolve, reject) => {
       if (this.recorder !== undefined) {
@@ -93,50 +75,42 @@ class ScreenCapture {
         recorderOpts.videoCodec = codecMap.get(videoCodec);
       }
 
-      console.log([JSON.stringify(recorderOpts)])
-      this.recorder = execa(BIN, [JSON.stringify(recorderOpts)]);
-
+      var recorderOptsArgs = JSON.stringify(recorderOpts);
+      console.log(recorderOptsArgs)
+      this.recorder = spawn(BIN, [recorderOptsArgs]);
       const timeout = setTimeout(() => {
-        // `.stopRecording()` was called already
-        if (this.recorder === undefined) {
-          return;
-        }
+         if (this.recorder === undefined) {
+           return;
+         }
 
-        const err = new Error('Could not start recording within 5 seconds');
-        err.code = 'RECORDER_TIMEOUT';
-        this.recorder.kill();
-        delete this.recorder;
-        reject(err);
+         const err = new Error('Could not start recording within 5 seconds');
+         err.code = 'RECORDER_TIMEOUT';
+         this.recorder.kill();
+         delete this.recorder;
+         reject(err);
       }, 5000);
 
-      this.recorder.catch(error => {
+      this.recorder.stdout.setEncoding('binary')
+      this.recorder.stdout.on('data', function(chunk) {
+         clearTimeout(timeout);
+         console.log(chunk)
+      })
+                       
+//      this.recorder.stdout.pipe(process.stdout)
+                       
+     this.recorder.stderr.on('data', function(data) {
+        console.log('stderr: ' + data);
         clearTimeout(timeout);
         delete this.recorder;
         reject(error);
       });
-
-      this.recorder.stdout.setEncoding('utf8');
-      this.recorder.stdout.on('data', data => {
-        print(data);
-        if (data.trim() === 'R') {
-          // `R` is printed by Swift when the recording **actually** starts
-          clearTimeout(timeout);
-          resolve(this.tmpPath);
-        }
-      });
-    });
+     });
   }
 
   async stopRecording() {
-    if (this.recorder === undefined) {
-      throw new Error('Call `.startRecording()` first');
-    }
-
+    console.log("stop recording")
     this.recorder.kill();
-    await this.recorder;
     delete this.recorder;
-
-    return this.tmpPath;
   }
 }
 
@@ -170,11 +144,18 @@ Object.defineProperty(module.exports, 'videoCodecs', {
       ['proRes422', 'Apple ProRes 422'],
       ['proRes4444', 'Apple ProRes 4444']
     ]);
-
-    if (!supportsHevcHardwareEncoding) {
-      codecs.delete('hevc');
-    }
-
     return codecs;
   }
 });
+
+
+// Workaround for https://github.com/electron/electron/issues/9459
+const BIN = path.join(electronUtil.fixPathForAsarUnpack(__dirname), 'capture');
+
+const supportsHevcHardwareEncoding = (() => {
+  // Get the Intel Core generation, the `4` in `Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz
+  // More info: https://www.intel.com/content/www/us/en/processors/processor-numbers.html
+  const result = /Intel.*Core.*i(?:7|5)-(\d)/.exec(os.cpus()[0].model);
+  // Intel Core generation 6 or higher supports HEVC hardware encoding
+  return result && Number(result[1]) >= 6;
+})();

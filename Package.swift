@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
   name: "CaptureCLI",
   platforms: [
-    .macOS(.v10_12)
+    .macOS(.v10_13)
   ],
   products: [
     .executable(
@@ -16,15 +16,11 @@ let package = Package(
       ]
     )
   ],
-  dependencies: [
-    .package(url: "https://github.com/aekosyakov/ScreenCapture.git", from: "1.0.2")
-  ],
+  dependencies: [],
   targets: [
     .target(
       name: "CaptureCLI",
-      dependencies: [
-        "ScreenCapture"
-      ]
+      dependencies: []
     )
   ]
 )
