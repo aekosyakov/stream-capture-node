@@ -2,6 +2,7 @@ import Foundation
 import AVFoundation
 
 let output = FileHandle.standardOutput
+
 func record() throws {
   let options: Options = try CLI.arguments.first!.jsonDecoded()
   let recorder = try ScreenCapture(
@@ -11,12 +12,14 @@ func record() throws {
     highlightClicks: options.highlightClicks,
     screenId: options.screenId == 0 ? .main : options.screenId,
     audioDevice: options.audioDeviceId != nil ? AVCaptureDevice(uniqueID: options.audioDeviceId!) : nil,
-    videoCodec: options.videoCodec
+    videoCodec: nil
   )
   recorder.onDataStream = {
     output.write($0)
   }
-  recorder.onFinish = { exit(0) }
+  recorder.onFinish = {
+    exit(0)
+  }
   recorder.onError = {
     recorder.stop()
     CLI.standardError.write($0.localizedDescription)

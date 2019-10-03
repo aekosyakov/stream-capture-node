@@ -71,7 +71,6 @@ class ScreenCapture {
         if (!codecMap.has(videoCodec)) {
           throw new Error(`Unsupported video codec specified: ${videoCodec}`);
         }
-
         recorderOpts.videoCodec = codecMap.get(videoCodec);
       }
 
@@ -93,7 +92,7 @@ class ScreenCapture {
       this.recorder.stdout.setEncoding('binary')
       this.recorder.stdout.on('data', function(chunk) {
          clearTimeout(timeout);
-         console.log(chunk)
+//         console.log(chunk);
       })
                        
 //      this.recorder.stdout.pipe(process.stdout)
@@ -108,7 +107,7 @@ class ScreenCapture {
   }
 
   async stopRecording() {
-    console.log("stop recording")
+    console.log("stop recording");
     this.recorder.kill();
     delete this.recorder;
   }

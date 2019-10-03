@@ -14,9 +14,8 @@ async function main() {
   await delay(1000);
   recorder.startRecording();
   console.log("start")
-  await delay(3000);
-  console.log("stop");
-  recorder.stopRecording();
+  await delay(50000);
+  await recorder.stopRecording();
   console.log('Stop recording');
 }
 
