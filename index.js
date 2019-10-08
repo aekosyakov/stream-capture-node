@@ -6,7 +6,8 @@ const macosVersion = require('macos-version');
 const electronUtil = require('electron-util/node');
 const debuglog = util.debuglog('capture');
 const spawn = require('child_process').spawn
-
+const tempy = require('tempy');
+const fileUrl = require('file-url');
 class ScreenCapture {
   constructor() {
     macosVersion.assertGreaterThanOrEqualTo('10.13');
@@ -40,8 +41,10 @@ class ScreenCapture {
           return;
         }
       }
+      this.tmpPath = tempy.file({extension: 'mp4'});
 
       const recorderOpts = {
+        destination: fileUrl(this.tmpPath),
         framesPerSecond: fps,
         showCursor,
         highlightClicks,
@@ -107,10 +110,21 @@ class ScreenCapture {
   }
 
   async stopRecording() {
-    console.log("stop recording");
-    this.recorder.kill();
-    delete this.recorder;
+      if (this.recorder === undefined) {
+        throw new Error('Call `.startRecording()` first');
+      }
+
+      this.recorder.kill();
+      await this.recorder;
+      delete this.recorder;
+
+      return this.tmpPath;
   }
+//  async stopRecording() {
+//    console.log("stop recording");
+//    this.recorder.kill();
+//    delete this.recorder;
+//  }
 }
 
 module.exports = () => new ScreenCapture();

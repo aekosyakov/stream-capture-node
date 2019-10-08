@@ -6,9 +6,11 @@ public final
 class ScreenCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
 
     public let devices = Devices.self
+    private var destination: URL?
     private let session: AVCaptureSession
     private var activity: NSObjectProtocol?
-    private let videoOutput: AVCaptureVideoDataOutput
+    private var videoOutput: AVCaptureVideoDataOutput?
+    private var movieFileOutput: AVCaptureMovieFileOutput?
 
     public var onFinish: (() -> Void)?
     public var onError: ((Error) -> Void)?
@@ -19,14 +21,16 @@ class ScreenCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
 
     public
     init(
+        destination: URL?,
         framesPerSecond: Int = 60,
         cropRect: CGRect? = NSScreen.main?.frame,
         showCursor: Bool = true,
         highlightClicks: Bool = true,
         screenId: CGDirectDisplayID = .main,
         audioDevice: AVCaptureDevice? = .default(for: .audio),
-        videoCodec: String? = "h264"
+        videoCodec: String? = "HEVC"
     ) throws {
+        self.destination = destination
         session = AVCaptureSession()
 //        session.sessionPreset = .hd1280x720
         
@@ -60,20 +64,40 @@ class ScreenCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             throw CaptureError.couldNotAddScreen
         }
 
-        videoOutput = AVCaptureVideoDataOutput()
-        if session.canAddOutput(videoOutput) {
-            session.addOutput(videoOutput)
+        if destination != nil {
+            let movieOutput = AVCaptureMovieFileOutput()
+            movieOutput.movieFragmentInterval = .invalid
+            if let videoCodec = videoCodec {
+              movieOutput.setOutputSettings([AVVideoCodecKey: videoCodec], for: movieOutput.connection(with: .video)!)
+            }
+            self.movieFileOutput = movieOutput
+            if session.canAddOutput(movieOutput) {
+              session.addOutput(movieOutput)
+            } else {
+              throw CaptureError.couldNotAddOutput
+            }
         } else {
-            throw CaptureError.couldNotAddOutput
+            let captureOutput = AVCaptureVideoDataOutput()
+            self.videoOutput = captureOutput
+            if session.canAddOutput(captureOutput) {
+                session.addOutput(captureOutput)
+            } else {
+                throw CaptureError.couldNotAddOutput
+            }
         }
+
         super.init()
 
     }
     
     public
     func start() {
-        videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "sample_buffer_queue"))
         session.startRunning()
+        if let destination = destination {
+            movieFileOutput?.startRecording(to: destination, recordingDelegate: self)
+        } else {
+            videoOutput?.setSampleBufferDelegate(self, queue: DispatchQueue(label: "sample_buffer_queue"))
+        }
     }
 
     public
@@ -88,6 +112,58 @@ class ScreenCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             onDataStream?(data)
         }
     }
+
+}
+
+
+extension ScreenCapture: AVCaptureFileOutputRecordingDelegate {
+
+    private
+    var shouldPreventSleep: Bool {
+        get { activity != nil }
+        set {
+          if newValue {
+                activity = ProcessInfo.processInfo.beginActivity(options: .idleSystemSleepDisabled, reason: "Recording screen")
+          } else if let activity = activity {
+                ProcessInfo.processInfo.endActivity(activity)
+                self.activity = nil
+          }
+        }
+  }
+
+    public
+    func fileOutput(_ captureOutput: AVCaptureFileOutput, didStartRecordingTo fileURL: URL, from connections: [AVCaptureConnection]) {
+        shouldPreventSleep = true
+//        onStart?()
+    }
+
+    public
+    func fileOutput(_ captureOutput: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
+        shouldPreventSleep = false
+
+        let FINISHED_RECORDING_ERROR_CODE = -11_806
+
+        if let error = error, error._code != FINISHED_RECORDING_ERROR_CODE {
+          onError?(error)
+        } else {
+          onFinish?()
+        }
+    }
+
+    public
+    func fileOutput(_ output: AVCaptureFileOutput, didPauseRecordingTo fileURL: URL, from connections: [AVCaptureConnection]) {
+        shouldPreventSleep = false
+        onPause?()
+    }
+
+    public
+    func fileOutput(_ output: AVCaptureFileOutput, didResumeRecordingTo fileURL: URL, from connections: [AVCaptureConnection]) {
+        shouldPreventSleep = true
+        onResume?()
+    }
+
+    public
+    func fileOutputShouldProvideSampleAccurateRecordingStart(_ output: AVCaptureFileOutput) -> Bool { true }
 
 }
 

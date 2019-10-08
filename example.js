@@ -5,6 +5,7 @@ const os = require('os');
 const util = require('util');
 const macosVersion = require('macos-version');
 const electronUtil = require('electron-util/node');
+const fs = require('fs');
 
 async function main() {
   const recorder = capture();
@@ -15,8 +16,9 @@ async function main() {
   recorder.startRecording();
   console.log("start")
   await delay(50000);
-  await recorder.stopRecording();
-  console.log('Stop recording');
+  const fp = await recorder.stopRecording();
+  fs.renameSync(fp, 'recording.mp4');
+  console.log('Video saved in the current directory');
 }
 
 main().catch(console.error);

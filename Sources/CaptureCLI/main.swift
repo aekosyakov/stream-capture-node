@@ -6,6 +6,7 @@ let output = FileHandle.standardOutput
 func record() throws {
   let options: Options = try CLI.arguments.first!.jsonDecoded()
   let recorder = try ScreenCapture(
+    destination: options.destination,
     framesPerSecond: options.framesPerSecond,
     cropRect: options.cropRect,
     showCursor: options.showCursor,
@@ -37,6 +38,7 @@ func record() throws {
 }
 
 struct Options: Decodable {
+  let destination: URL?
   let framesPerSecond: Int
   let cropRect: CGRect?
   let showCursor: Bool
