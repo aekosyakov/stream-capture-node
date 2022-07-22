@@ -40,7 +40,7 @@
   "devDependencies": {
     "ava": "^1.2.1",
     "delay": "^4.1.0",
-    "file-type": "^10.8.0",
+    "file-type": "^16.5.4",
     "read-chunk": "^3.0.0",
     "xo": "^0.24.0"
   },
